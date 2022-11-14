@@ -35,6 +35,8 @@ mkdir -p /g.linux/deadline/llvm/bins
 ln -s /usr/bin /g.linux/deadline/llvm/bins/bin
 cd /g.linux/analyzer
 cmake -S src -B build
+cd /g.linux/analyzer/build
+make
 cd /g.linux/deadline
 python3 build.py 4.19.204 "https://syzkaller.appspot.com/text?tag=KernelConfig&x=9b9277b418617afe"
 ```
@@ -52,6 +54,8 @@ no      13@cma_netdev_change    14@kasan_check_write
 no      15@ceph_fill_file_size  16@__dynamic_pr_debug
 yes     17@xfs_refcount_merge_right_extent      18@trace_event_raw_event_xfs_refcount_double_extent_class
 ```
+
+As there are same-name function distributed in different files, so we need add filepath into our representation of function. Making it short, we create a relationship between fileid and real filepath using file ``
 
 ### 3. Distance calculation
 

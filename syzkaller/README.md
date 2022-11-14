@@ -1,3 +1,9 @@
+## Changes by G-Fuzz
+
+We modified Syzkaller based on commit [3cd800e43](https://github.com/google/syzkaller/tree/3cd800e43)
+
+Patches are available [here](https://github.com/zjuchenyuan/gfuzz/blob/main/scripts/build/gfuzz-changes.patch) and [here](https://github.com/zjuchenyuan/gfuzz/blob/main/scripts/build/gfuzz-changes-linux.patch).
+
 # syzkaller - kernel fuzzer
 
 [![CI Status](https://github.com/google/syzkaller/workflows/ci/badge.svg)](https://github.com/google/syzkaller/actions?query=workflow/ci)
