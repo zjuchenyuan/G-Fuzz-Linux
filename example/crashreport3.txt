@@ -1,0 +1,98 @@
+IPVS: ftp: loaded support on port[0] = 21
+IPVS: ftp: loaded support on port[0] = 21
+======================================================
+WARNING: possible circular locking dependency detected
+4.19.156-syzkaller #0 Not tainted
+------------------------------------------------------
+kworker/1:2/4382 is trying to acquire lock:
+000000009041c4f3 (&sb->s_type->i_mutex_key#13){+.+.}, at: inode_lock include/linux/fs.h:748 [inline]
+000000009041c4f3 (&sb->s_type->i_mutex_key#13){+.+.}, at: __sock_release+0x86/0x2a0 net/socket.c:578
+
+but task is already holding lock:
+00000000caacd63b ((delayed_fput_work).work){+.+.}, at: process_one_work+0x79c/0x1570 kernel/workqueue.c:2130
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #3 ((delayed_fput_work).work){+.+.}:
+       worker_thread+0x64c/0x1130 kernel/workqueue.c:2298
+       kthread+0x33f/0x460 kernel/kthread.c:259
+       ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:415
+
+-> #2 ((wq_completion)"events"){+.+.}:
+       flush_scheduled_work include/linux/workqueue.h:599 [inline]
+       tipc_exit_net+0x38/0x60 net/tipc/core.c:100
+       ops_exit_list+0xa5/0x150 net/core/net_namespace.c:153
+       cleanup_net+0x3b4/0x8b0 net/core/net_namespace.c:553
+       process_one_work+0x864/0x1570 kernel/workqueue.c:2155
+       worker_thread+0x64c/0x1130 kernel/workqueue.c:2298
+       kthread+0x33f/0x460 kernel/kthread.c:259
+       ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:415
+
+-> #1 (pernet_ops_rwsem){++++}:
+       unregister_netdevice_notifier+0x7b/0x330 net/core/dev.c:1708
+       raw_release+0x58/0x820 net/can/raw.c:358
+       __sock_release+0xcd/0x2a0 net/socket.c:579
+       sock_close+0x15/0x20 net/socket.c:1140
+       __fput+0x2ce/0x890 fs/file_table.c:278
+       task_work_run+0x148/0x1c0 kernel/task_work.c:113
+       tracehook_notify_resume include/linux/tracehook.h:193 [inline]
+       exit_to_usermode_loop+0x251/0x2a0 arch/x86/entry/common.c:167
+       prepare_exit_to_usermode arch/x86/entry/common.c:198 [inline]
+       syscall_return_slowpath arch/x86/entry/common.c:271 [inline]
+       do_syscall_64+0x538/0x620 arch/x86/entry/common.c:296
+       entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+-> #0 (&sb->s_type->i_mutex_key#13){+.+.}:
+       down_write+0x34/0x90 kernel/locking/rwsem.c:70
+       inode_lock include/linux/fs.h:748 [inline]
+       __sock_release+0x86/0x2a0 net/socket.c:578
+       sock_close+0x15/0x20 net/socket.c:1140
+       __fput+0x2ce/0x890 fs/file_table.c:278
+       delayed_fput+0x56/0x70 fs/file_table.c:304
+       process_one_work+0x864/0x1570 kernel/workqueue.c:2155
+       worker_thread+0x64c/0x1130 kernel/workqueue.c:2298
+       kthread+0x33f/0x460 kernel/kthread.c:259
+       ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:415
+
+other info that might help us debug this:
+
+Chain exists of:
+  &sb->s_type->i_mutex_key#13 --> (wq_completion)"events" --> (delayed_fput_work).work
+
+ Possible unsafe locking scenario:
+
+       CPU0                    CPU1
+       ----                    ----
+  lock((delayed_fput_work).work);
+                               lock((wq_completion)"events");
+                               lock((delayed_fput_work).work);
+  lock(&sb->s_type->i_mutex_key#13);
+
+ *** DEADLOCK ***
+
+2 locks held by kworker/1:2/4382:
+ #0: 00000000138532ef ((wq_completion)"events"){+.+.}, at: process_one_work+0x767/0x1570 kernel/workqueue.c:2126
+ #1: 00000000caacd63b ((delayed_fput_work).work){+.+.}, at: process_one_work+0x79c/0x1570 kernel/workqueue.c:2130
+
+stack backtrace:
+CPU: 1 PID: 4382 Comm: kworker/1:2 Not tainted 4.19.156-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: events delayed_fput
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x1fc/0x2fe lib/dump_stack.c:118
+ print_circular_bug.constprop.0.cold+0x2d7/0x41e kernel/locking/lockdep.c:1221
+ check_prev_add kernel/locking/lockdep.c:1865 [inline]
+ check_prevs_add kernel/locking/lockdep.c:1978 [inline]
+ validate_chain kernel/locking/lockdep.c:2419 [inline]
+ __lock_acquire+0x30c9/0x3ff0 kernel/locking/lockdep.c:3415
+ lock_acquire+0x170/0x3c0 kernel/locking/lockdep.c:3907
+ down_write+0x34/0x90 kernel/locking/rwsem.c:70
+ inode_lock include/linux/fs.h:748 [inline]
+ __sock_release+0x86/0x2a0 net/socket.c:578
+ sock_close+0x15/0x20 net/socket.c:1140
+ __fput+0x2ce/0x890 fs/file_table.c:278
+ delayed_fput+

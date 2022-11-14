@@ -1,0 +1,81 @@
+Bluetooth: hci10: Frame reassembly failed (-84)
+Bluetooth: hci10: Received unexpected HCI Event 00000000
+Bluetooth: hci11: Frame reassembly failed (-84)
+Bluetooth: hci11: Received unexpected HCI Event 00000000
+==================================================================
+BUG: KASAN: use-after-free in __skb_unlink include/linux/skbuff.h:1916 [inline]
+BUG: KASAN: use-after-free in __skb_dequeue include/linux/skbuff.h:1936 [inline]
+BUG: KASAN: use-after-free in skb_dequeue+0x15f/0x180 net/core/skbuff.c:2838
+Read of size 8 at addr ffff8880a154ee80 by task kworker/u5:3/8166
+
+CPU: 0 PID: 8166 Comm: kworker/u5:3 Not tainted 4.19.204-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: hci11 hci_rx_work
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x1fc/0x2ef lib/dump_stack.c:118
+ print_address_description.cold+0x54/0x219 mm/kasan/report.c:256
+ kasan_report_error.cold+0x8a/0x1b9 mm/kasan/report.c:354
+ kasan_report mm/kasan/report.c:412 [inline]
+ __asan_report_load8_noabort+0x88/0x90 mm/kasan/report.c:433
+ __skb_unlink include/linux/skbuff.h:1916 [inline]
+ __skb_dequeue include/linux/skbuff.h:1936 [inline]
+ skb_dequeue+0x15f/0x180 net/core/skbuff.c:2838
+ hci_rx_work+0x6d/0xc70 net/bluetooth/hci_core.c:4331
+ process_one_work+0x864/0x1570 kernel/workqueue.c:2153
+ worker_thread+0x64c/0x1130 kernel/workqueue.c:2296
+ kthread+0x33f/0x460 kernel/kthread.c:259
+ ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:415
+
+Allocated by task 9547:
+ kmem_cache_alloc_node+0x146/0x3b0 mm/slab.c:3649
+ __alloc_skb+0x71/0x560 net/core/skbuff.c:193
+ alloc_skb include/linux/skbuff.h:995 [inline]
+ bt_skb_alloc include/net/bluetooth/bluetooth.h:339 [inline]
+ h4_recv_buf+0x57c/0xda0 drivers/bluetooth/hci_h4.c:197
+ h4_recv+0xdf/0x1f0 drivers/bluetooth/hci_h4.c:131
+ hci_uart_tty_receive+0x221/0x530 drivers/bluetooth/hci_ldisc.c:621
+ tiocsti drivers/tty/tty_io.c:2194 [inline]
+ tty_ioctl+0xff8/0x15c0 drivers/tty/tty_io.c:2580
+ vfs_ioctl fs/ioctl.c:46 [inline]
+ file_ioctl fs/ioctl.c:501 [inline]
+ do_vfs_ioctl+0xcdb/0x12e0 fs/ioctl.c:688
+ ksys_ioctl+0x9b/0xc0 fs/ioctl.c:705
+ __do_sys_ioctl fs/ioctl.c:712 [inline]
+ __se_sys_ioctl fs/ioctl.c:710 [inline]
+ __x64_sys_ioctl+0x6f/0xb0 fs/ioctl.c:710
+ do_syscall_64+0xf9/0x620 arch/x86/entry/common.c:293
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+Freed by task 8166:
+ __cache_free mm/slab.c:3503 [inline]
+ kmem_cache_free+0x7f/0x260 mm/slab.c:3765
+ kfree_skbmem+0xc1/0x140 net/core/skbuff.c:595
+ __kfree_skb net/core/skbuff.c:655 [inline]
+ kfree_skb+0x127/0x3d0 net/core/skbuff.c:672
+ hci_event_packet+0x32c/0x7e20 net/bluetooth/hci_event.c:5963
+ hci_rx_work+0x4ad/0xc70 net/bluetooth/hci_core.c:4366
+ process_one_work+0x864/0x1570 kernel/workqueue.c:2153
+ worker_thread+0x64c/0x1130 kernel/workqueue.c:2296
+ kthread+0x33f/0x460 kernel/kthread.c:259
+ ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:415
+
+The buggy address belongs to the object at ffff8880a154ee80
+ which belongs to the cache skbuff_head_cache of size 232
+The buggy address is located 0 bytes inside of
+ 232-byte region [ffff8880a154ee80, ffff8880a154ef68)
+The buggy address belongs to the page:
+page:ffffea0002855380 count:1 mapcount:0 mapping:ffff8880b5b8fd80 index:0x0
+flags: 0xfff00000000100(slab)
+raw: 00fff00000000100 ffffea0002662908 ffffea000266a808 ffff8880b5b8fd80
+raw: 0000000000000000 ffff8880a154e0c0 000000010000000c 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff8880a154ed80: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff8880a154ee00: fb fb fb fb fb fc fc fc fc fc fc fc fc fc fc fc
+>ffff8880a154ee80: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+                   ^
+ ffff8880a154ef00: fb fb fb fb fb fb fb fb fb fb fb fb fb fc fc fc
+ ffff8880a154ef80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+==================================================================

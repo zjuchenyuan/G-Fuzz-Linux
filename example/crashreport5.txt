@@ -1,0 +1,45 @@
+wlan1: Creating new IBSS network, BSSID 50:50:50:50:50:50
+wlan1: Creating new IBSS network, BSSID 50:50:50:50:50:50
+IPv6: ADDRCONF(NETDEV_CHANGE): wlan1: link becomes ready
+IPv6: ADDRCONF(NETDEV_CHANGE): wlan1: link becomes ready
+BUG: sleeping function called from invalid context at net/core/sock.c:2863
+in_atomic(): 1, irqs_disabled(): 0, pid: 8130, name: syz-executor667
+1 lock held by syz-executor667/8130:
+ #0: 000000004cd29212 (hci_sk_list.lock){++++}, at: hci_sock_dev_event+0x3db/0x660 net/bluetooth/hci_sock.c:756
+Preemption disabled at:
+[<0000000000000000>]           (null)
+CPU: 1 PID: 8130 Comm: syz-executor667 Not tainted 4.19.194-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x1fc/0x2ef lib/dump_stack.c:118
+ ___might_sleep.cold+0x235/0x250 kernel/sched/core.c:6192
+ lock_sock_nested+0x33/0x110 net/core/sock.c:2863
+ lock_sock include/net/sock.h:1510 [inline]
+ hci_sock_dev_event+0x465/0x660 net/bluetooth/hci_sock.c:758
+ hci_unregister_dev+0x25b/0x910 net/bluetooth/hci_core.c:3292
+ vhci_release+0x70/0xe0 drivers/bluetooth/hci_vhci.c:354
+ __fput+0x2ce/0x890 fs/file_table.c:278
+ task_work_run+0x148/0x1c0 kernel/task_work.c:113
+ exit_task_work include/linux/task_work.h:22 [inline]
+ do_exit+0xbf3/0x2be0 kernel/exit.c:870
+ do_group_exit+0x125/0x310 kernel/exit.c:967
+ __do_sys_exit_group kernel/exit.c:978 [inline]
+ __se_sys_exit_group kernel/exit.c:976 [inline]
+ __x64_sys_exit_group+0x3a/0x50 kernel/exit.c:976
+ do_syscall_64+0xf9/0x620 arch/x86/entry/common.c:293
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x449b59
+Code: 00 49 c7 c0 bc ff ff ff be e7 00 00 00 ba 3c 00 00 00 eb 12 0f 1f 44 00 00 89 d0 0f 05 48 3d 00 f0 ff ff 77 1c f4 89 f0 0f 05 <48> 3d 00 f0 ff ff 76 e7 f7 d8 64 41 89 00 eb df 0f 1f 80 00 00 00
+RSP: 002b:00007ffd9d302148 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7
+RAX: ffffffffffffffda RBX: 00000000004d71f0 RCX: 0000000000449b59
+RDX: 000000000000003c RSI: 00000000000000e7 RDI: 0000000000000001
+RBP: 0000000000000001 R08: ffffffffffffffbc R09: 00000000004d5620
+R10: 0000000000000231 R11: 0000000000000246 R12: 00000000004d71f0
+R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000001
+BUG: scheduling while atomic: syz-executor667/8130/0x00000002
+1 lock held by syz-executor667/8130:
+ #0: 000000004cd29212 (hci_sk_list.lock){++++}, at: hci_sock_dev_event+0x3db/0x660 net/bluetooth/hci_sock.c:756
+Modules linked in:
+Preemption disabled at:
+[<0000000000000000>]           (null)
