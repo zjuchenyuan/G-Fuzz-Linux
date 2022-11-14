@@ -3,7 +3,7 @@
 Adapted from [https://github.com/sslab-gatech/deadline](https://github.com/sslab-gatech/deadline)
 
 - Python3 support
-- LLVM11 support
+- LLVM10 support
 - Command line flags support and ignore parsing failure
 - O0 build
 
@@ -15,18 +15,14 @@ Deadline provide a formal and precise definition of double-fetch bugs and then i
 
 This repository is provided under the terms of the MIT license.
 
-## Init
-- LLVM    : cd llvm && ./init.sh
+## Clang build
 
-## Build
-- For first time build   : ./llvm.py build -c
-- For later build         : ./llvm.py build
-- For debug build         : ./llvm.py build -c -d <item>
+G-Fuzz skip building LLVM, and use clang provided by apt instead.
 
-## Test
-- Set test env            : ./llvm.py work
-- Run on bitcode file     : opt -symf <path-to-output> <path-to-bitcode>
-- Exit test env           : Ctrl + D or exit
+```
+mkdir -p /g.linux/deadline/llvm/bins
+ln -s /usr/bin /g.linux/deadline/llvm/bins/bin
+```
 
 ## Kernel
 (In the case of Linux kernel)
