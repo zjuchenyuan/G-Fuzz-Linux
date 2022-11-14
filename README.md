@@ -91,8 +91,35 @@ cd /g.linux/example
 python3 /g.linux/scripts/report_syscall_inference.py crashreport1.txt
 ```
 
-### 5. Fuzzing conf generation
+It will output `["exit_group", "syz_open_dev$tty1", "syz_open_dev$tty20", "syz_open_dev$ttys"]`, copy this output, as we will use it in our conf file.
+
+### 5. Fuzzing preparation and conf generation
+
+To run the fuzzing, we need to compile syzkaller and prepare an OS image.
+
+```
+cd /
+wget -q https://golang.org/dl/go1.15.3.linux-amd64.tar.gz
+tar xf go1.15.3.linux-amd64.tar.gz
+export PATH=/go/bin:$PATH
+cd /g.linux/syzkaller
+make
+```
+
+Please follow [official guidance](https://github.com/google/syzkaller/blob/master/docs/linux/setup_ubuntu-host_qemu-vm_x86-64-kernel.md#image) to create an image under `/g.linux/image`.
+
+Then, write a fuzzing conf file required by Syzkaller, you can take a look at [example1.conf](example/example1.conf).
 
 ### 6. Run fuzzing
 
+We recommend running syzkaller outside the container.
+
+```
+mkdir -p /g.linux/output/example/example1
+cd /g.linux/output/example/example1
+/g.linux/syzkaller/bin/syz-manager -conf /g.linux/example/example1.conf
+```
+
 ### 7. Result analysis
+
+G-Fuzz will write a `foundtime` file for each crash found, which records crash found time relative to fuzzing start.

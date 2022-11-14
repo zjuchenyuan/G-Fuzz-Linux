@@ -1,4 +1,4 @@
-import sys, os, re
+import sys, os, re, json
 FOLDER = os.path.abspath(os.path.dirname(__file__))
 text = open(sys.argv[1]).read()
 #trace = text.split("Call Trace:")[1].split("RIP: ")[0]
@@ -56,4 +56,4 @@ for line in text.split("\n"):
     words = re.split(r'/|_|-|\.', filepath)
     if "bpf" in words or "seccomp" in words: #GFuzz seccomp/bpf rule
         res.update(["prctl$PR_SET_SECCOMP", "seccomp$SECCOMP_SET_MODE_FILTER", "seccomp$SECCOMP_SET_MODE_FILTER_LISTENER"])
-print(sorted(res))
+print(json.dumps(sorted(res)))
