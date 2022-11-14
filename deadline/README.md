@@ -17,10 +17,9 @@ This repository is provided under the terms of the MIT license.
 
 ## Init
 - LLVM    : cd llvm && ./init.sh
-- Z3      : cd deps/z3 && ./init.sh
 
 ## Build
-- For first time buildi   : ./llvm.py build -c
+- For first time build   : ./llvm.py build -c
 - For later build         : ./llvm.py build
 - For debug build         : ./llvm.py build -c -d <item>
 
